@@ -511,26 +511,42 @@ class EnvManager(object):
             except CalledProcessError as e:
                 raise EnvCommandError(e)
 
-            return
+        else:
+            try:
+                from venv import EnvBuilder
 
-        try:
-            from venv import EnvBuilder
+                # use the same defaults as python -m venv
+                if os.name == "nt":
+                    use_symlinks = False
+                else:
+                    use_symlinks = True
 
-            # use the same defaults as python -m venv
-            if os.name == "nt":
-                use_symlinks = False
-            else:
-                use_symlinks = True
+                builder = EnvBuilder(with_pip=True, symlinks=use_symlinks)
+                build = builder.create
+            except ImportError:
+                # We fallback on virtualenv for Python 2.7
+                from virtualenv import create_environment
 
-            builder = EnvBuilder(with_pip=True, symlinks=use_symlinks)
-            build = builder.create
-        except ImportError:
-            # We fallback on virtualenv for Python 2.7
-            from virtualenv import create_environment
+                build = create_environment
 
-            build = create_environment
+            build(path)
 
-        build(path)
+        # make sure pip and setuptools are on the same version as the base environment
+        from pip import __version__ as pip_version
+        from setuptools import __version__ as setuptools_version
+
+        the_venv = VirtualEnv(Path(path))
+        the_venv.run(
+            "python", "-m", "pip", "install", "--upgrade", "pip=={}".format(pip_version)
+        )
+        the_venv.run(
+            "python",
+            "-m",
+            "pip",
+            "install",
+            "--upgrade",
+            "setuptools=={}".format(setuptools_version),
+        )
 
     def remove_venv(self, path):  # type: (str) -> None
         shutil.rmtree(path)
