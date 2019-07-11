@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "poetry"
-version = "1.0.0a4"
+version = "1.0.0a4+rwe"
 description = "Python dependency management and packaging made easy."
 authors = [
     "Sébastien Eustace <sebastien@eustace.io>"
@@ -66,6 +66,8 @@ tox = "^3.0"
 pytest-sugar = "^0.9.2"
 httpretty = "^0.9.6"
 
+[tool.poetry.extras]
+devpi-poetry = ["devpi-poetry"]
 
 [tool.poetry.scripts]
 poetry = "poetry.console:main"
