@@ -10,6 +10,12 @@ from poetry.console.commands.env_command import EnvCommand
 from poetry.console.logging import IOFormatter
 from poetry.console.logging import IOHandler
 
+# TODO: this should be a plug-in
+try:
+    from devpi_poetry.use_current_devpi_index import use_current_devpi_index
+except ImportError:
+    use_current_devpi_index = None
+
 
 class ApplicationConfig(BaseApplicationConfig):
     def configure(self):
@@ -26,6 +32,10 @@ class ApplicationConfig(BaseApplicationConfig):
             ConsoleEvents.PRE_HANDLE.value, self.register_command_loggers
         )
         self.add_event_listener(ConsoleEvents.PRE_HANDLE.value, self.set_env)
+        if use_current_devpi_index:
+            self.add_event_listener(
+                ConsoleEvents.PRE_HANDLE.value, use_current_devpi_index
+            )
 
     def register_command_loggers(
         self,
